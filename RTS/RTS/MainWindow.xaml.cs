@@ -15,7 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace RTS
-{  
+{
     static public class ValueModel
     {
         public static double Pressure;
@@ -31,15 +31,6 @@ namespace RTS
         public static bool Leakage;
         public static bool IsMiningBegin;
     }
-
-    public class ThreadClass
-    {      
-        System.Threading.Thread NewThread;                 
-        //public void GetNewThread(delegate e)
-        //{
-        //    //new System.Threading.Thread( task() );         
-        //} 
-    }
     public partial class MainWindow : Window
     {
         public System.Threading.Thread TimerThread;
@@ -47,17 +38,17 @@ namespace RTS
         {
             InitializeComponent();
             TimerThread = new System.Threading.Thread( Timer );
-            TimerThread.Start();  
+            TimerThread.Start();
         }
 
-        private void OnStart_Click(object sender, RoutedEventArgs e)
+        private void OnStart_Click( object sender, RoutedEventArgs e )
         {
             ChangeWorkingStatus();
-            if (ValueModel.IsItWorking)
+            if(ValueModel.IsItWorking)
             {
                 OnStart.Content = "Стоп";
             }
-            else if (!ValueModel.IsItWorking)
+            else if(!ValueModel.IsItWorking)
             {
                 OnStart.Content = "Старт";
             }
@@ -72,19 +63,19 @@ namespace RTS
 
 
 
-        public void Conrtoller()
+        public void Conrtoller( )
         {
             Fireing();
             Drilling();
         }
 
-        static public void Fireing()
+        static public void Fireing( )
         {
-            if (ValueModel.Fire)
+            if(ValueModel.Fire)
             {
                 ValueModel.FireTime -= 1;
-                
-                if (ValueModel.FireTime <= 0)
+
+                if(ValueModel.FireTime <= 0)
                 {
                     ValueModel.Fire = false;
                     ValueModel.FireTime = 0;
@@ -94,23 +85,32 @@ namespace RTS
 
         public void Drilling( )
         {
-            if (ValueModel.IsItDrillingNow)
+            MessageBox.Show(Convert.ToString(DrillingBar.Dispatcher.CheckAccess()));//темп, для 
+            if(DrillingBar.Dispatcher.CheckAccess())        //проверяет, есть ли доступ к этому элементу из фонового потока.
+                                                            // Да, ошибок не вылетает, но... Не жадничай же ты главный поток.
+                                                            // Может быть поможет  System.Threading.Thread.Sleep( 0 );  
+                                                            //в главном потоке... только вот где это всунуть, хм.
+                                                            //  https://msdn.microsoft.com/ru-ru/library/system.windows.threading.dispatcher.begininvoke(v=vs.110).aspx 
+                                                            //вот вроде как даже солюшн, но мне пора спать, а с тебя запиленный метод к утру
             {
-                if (!ValueModel.IsItDrilled)
+                if(ValueModel.IsItDrillingNow)
                 {
-                    if (DrillingBar.Value < 95)
+                    if(!ValueModel.IsItDrilled)
                     {
-                        DrillingBar.Value += 5;
-                    }
-                    else if (DrillingBar.Value >= 95)
-                    {
-                        DrillingBar.Value = 100;
-                    }
-                    else if (DrillingBar.Value == 100)
-                    {
-                        DrillingBar.Value = 0;
-                        ValueModel.IsItDrilled = true;
-                        DrillingButton.IsEnabled = false;
+                        if(DrillingBar.Value < 95)
+                        {
+                            DrillingBar.Value += 5;
+                        }
+                        else if(DrillingBar.Value >= 95)
+                        {
+                            DrillingBar.Value = 100;
+                        }
+                        else if(DrillingBar.Value == 100)
+                        {
+                            DrillingBar.Value = 0;
+                            ValueModel.IsItDrilled = true;
+                            DrillingButton.IsEnabled = false;
+                        }
                     }
                 }
             }
@@ -133,7 +133,7 @@ namespace RTS
             {
                 if(ValueModel.IsItWorking)
                 {
-                    System.Threading.Thread.Sleep( 5000 );
+                    System.Threading.Thread.Sleep( 1000 );
                     Conrtoller();
                 }
             }
@@ -154,11 +154,11 @@ namespace RTS
 
         private void Button_Click( object sender, RoutedEventArgs e )
         {
-            if (!ValueModel.IsItDrillingNow)
+            if(!ValueModel.IsItDrillingNow)
             {
                 ValueModel.IsItDrillingNow = true;
             }
-            else if (ValueModel.IsItDrillingNow)
+            else if(ValueModel.IsItDrillingNow)
             {
                 ValueModel.IsItDrillingNow = false;
             }
