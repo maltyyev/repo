@@ -15,38 +15,55 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace RTS
-{
-    /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
-    /// </summary>
-    ///  
+{  
     static public class ValueModel
     {
         public static double Pressure;
         public static double Speed;
         public static double Temperature;
 
-        public static bool IsItWork;
-
+        public static bool IsItDrilled = false;
+        public static bool IsItDrillingNow = false;
+        public static bool IsItWorking = false;
         public static bool Fire = false;
+
+        public static double FireTime = 0;
         public static bool Leakage;
         public static bool IsMiningBegin;
     }
+
+    public class ThreadClass
+    {      
+        System.Threading.Thread NewThread;                 
+        //public void GetNewThread(delegate e)
+        //{
+        //    //new System.Threading.Thread( task() );         
+        //} 
+    }
     public partial class MainWindow : Window
     {
+        public System.Threading.Thread TimerThread;
         public MainWindow( )
         {
             InitializeComponent();
-            ValueModel.IsItWork = false;
-            NewThread.Start();
+            TimerThread = new System.Threading.Thread( Timer );
+            TimerThread.Start();  
         }
 
-        private void OnStart_Click( object sender, RoutedEventArgs e )
+        private void OnStart_Click(object sender, RoutedEventArgs e)
         {
-            ChangeStatus();
+            ChangeWorkingStatus();
+            if (ValueModel.IsItWorking)
+            {
+                OnStart.Content = "Стоп";
+            }
+            else if (!ValueModel.IsItWorking)
+            {
+                OnStart.Content = "Старт";
+            }
         }
 
-        private void Button_Click( object sender, RoutedEventArgs e )
+        private void Exit_Click( object sender, RoutedEventArgs e )
         {
             Application.Current.Shutdown();
         }
@@ -54,44 +71,97 @@ namespace RTS
 
 
 
-        static public void Timer( int i )
+
+        public void Conrtoller()
+        {
+            Fireing();
+            Drilling();
+        }
+
+        static public void Fireing()
+        {
+            if (ValueModel.Fire)
+            {
+                ValueModel.FireTime -= 1;
+                
+                if (ValueModel.FireTime <= 0)
+                {
+                    ValueModel.Fire = false;
+                    ValueModel.FireTime = 0;
+                }
+            }
+        }
+
+        public void Drilling( )
+        {
+            if (ValueModel.IsItDrillingNow)
+            {
+                if (!ValueModel.IsItDrilled)
+                {
+                    if (DrillingBar.Value < 95)
+                    {
+                        DrillingBar.Value += 5;
+                    }
+                    else if (DrillingBar.Value >= 95)
+                    {
+                        DrillingBar.Value = 100;
+                    }
+                    else if (DrillingBar.Value == 100)
+                    {
+                        DrillingBar.Value = 0;
+                        ValueModel.IsItDrilled = true;
+                        DrillingButton.IsEnabled = false;
+                    }
+                }
+            }
+        }
+        public void Timer( int i )
         {
             while(true)
             {
-
-                if(ValueModel.IsItWork)
+                if(ValueModel.IsItWorking)
                 {
                     System.Threading.Thread.Sleep( i );
+                    Conrtoller();
                 }
             }
         }
 
-        static public void Timer( )
+        public void Timer( )
         {
             while(true)
             {
-
-                if(ValueModel.IsItWork)
+                if(ValueModel.IsItWorking)
                 {
-                    System.Threading.Thread.Sleep( 2000 );
+                    System.Threading.Thread.Sleep( 5000 );
+                    Conrtoller();
                 }
             }
         }
 
-        public void ChangeStatus( )
+        public void ChangeWorkingStatus( )
         {
-            if(ValueModel.IsItWork)
+            if(ValueModel.IsItWorking)
             {
-                ValueModel.IsItWork = false;
+                ValueModel.IsItWorking = false;
             }
-            else if(!ValueModel.IsItWork)
+            else if(!ValueModel.IsItWorking)
             {
-                ValueModel.IsItWork = true;
+                ValueModel.IsItWorking = true;
             }
 
         }
 
-        public System.Threading.Thread NewThread =
-    new System.Threading.Thread( Timer );
+        private void Button_Click( object sender, RoutedEventArgs e )
+        {
+            if (!ValueModel.IsItDrillingNow)
+            {
+                ValueModel.IsItDrillingNow = true;
+            }
+            else if (ValueModel.IsItDrillingNow)
+            {
+                ValueModel.IsItDrillingNow = false;
+            }
+        }
     }
 }
