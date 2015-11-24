@@ -14,7 +14,7 @@
                      Height="10"
                      Margin="27,191,0,0"
                      HorizontalAlignment="Left"
-                     VerticalAlignment="Top" />
+                     VerticalAlignment="Top"/>
         <ProgressBar Name="PlumbingProgressBar"
                      Width="350"
                      Height="10"
